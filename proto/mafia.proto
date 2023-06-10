@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+option go_package = "./mafia";
+
+package mafia;
+
+service Mafia {
+  rpc JoinGame(User) returns (stream Event) {}
+
+  rpc FinishDay(PlayingUser) returns (Empty) {}
+  rpc Kill(UserAction) returns (Empty) {}
+
+  rpc CheckMafia(UserAction) returns (CheckMafiaResponse) {}
+  rpc PublishMafia(UserAction) returns (Empty) {}
+
+  rpc ActivePlayers(ActivePlayersRequest) returns (ActivePlayersResponse) {}
+}
+
+message User { string username = 1; }
+
+message PlayingUser {
+  uint64 sessionID = 1;
+  string username = 2;
+}
+
+enum Role {
+  USUAL = 0;
+  MAFIA = 1;
+  COMISSAR = 2;
+}
+
+message SessionStarted {
+  uint64 sessionID = 1;
+  Role role = 2;
+  repeated User users = 3;
+}
+
+message Event {
+  oneof EventType {
+    User userJoin = 1;
+    User userLeave = 2;
+    SessionStarted sessionStarted = 3;
+    Empty dayFinished = 4;
+    Empty nightFinished = 5;
+    User userKilled = 6;
+    PublishMafia publishedMafia = 7;
+    GameFinished gameFinished = 8;
+    Voted voted = 9;
+  }
+}
+
+message UserAction {
+  PlayingUser user = 1;
+  User targetUser = 2;
+}
+
+message PublishMafia {
+  User user = 1;
+  User targetUser = 2;
+}
+
+message Voted {
+  User user = 1;
+  User targetUser = 2;
+}
+
+message CheckMafiaResponse { bool success = 1; }
+
+message GameFinished { bool mafiaWin = 1; }
+
+message ActivePlayersRequest {
+  uint64 sessionID = 1;
+}
+
+message ActivePlayersResponse {
+  repeated User users = 1;
+}
+
+message Empty {}

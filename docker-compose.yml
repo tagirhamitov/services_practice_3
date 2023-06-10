@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  chat_server:
+    build:
+      context: .
+      dockerfile: chat_server.dockerfile
+
+  mafia_server:
+    build:
+      context: .
+      dockerfile: mafia_server.dockerfile
+    ports:
+      - "9000:9000"
+
+  mafia_bot_1:
+    build:
+      context: .
+      dockerfile: mafia_client.dockerfile
+    entrypoint: /app --auto --username player_1 --server mafia_server:9000 --rabbitmq amqp://guest:guest@rabbitmq:5672
+
+  mafia_bot_2:
+    build:
+      context: .
+      dockerfile: mafia_client.dockerfile
+    entrypoint: /app --auto --username player_2 --server mafia_server:9000 --rabbitmq amqp://guest:guest@rabbitmq:5672
